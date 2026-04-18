@@ -319,7 +319,8 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
 	// instance variables ...
 	Node current;
 	int offset;
-	E lastReturned;
+	Node lastReturnedNode;
+	int lastReturnedOffset;
     /**
      * Default constructor 
      */
@@ -356,16 +357,17 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
     public E next()
     {
     	if (!hasNext()) throw new NoSuchElementException();
-    	int oldOffset;
-    	if(offset < nodeSize - 1) {
-    		oldOffset = offset;
-    		offset++;
-    		return current.data[oldOffset];
+    	
+    	lastReturnedOffset = offset;
+		lastReturnedNode = current;
+		
+    	if(offset >= nodeSize - 1) {
+    		offset = 0;
+    		current = current.next;
     	}
-    	oldOffset = offset;
-    	offset = 0;
-    	current = current.next;
-    	return current.previous.data[oldOffset];
+    	else offset++;
+    	
+    	return lastReturnedNode.data[lastReturnedOffset];
     }
 
     @Override
