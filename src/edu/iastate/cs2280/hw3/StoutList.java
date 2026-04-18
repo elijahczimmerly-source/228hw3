@@ -348,8 +348,8 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
     @Override
     public boolean hasNext()
     {
-    	if(offset < nodeSize - 1 && current.data[offset + 1] != null) return true;
-    	if (current.next.data[0] != null) return true;
+    	if(offset < nodeSize - 1 && offset < current.count - 1) return true;
+    	if (current.next.count > 0) return true;
     	return false;
     }
 
@@ -361,7 +361,7 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
     	lastReturnedOffset = offset;
 		lastReturnedNode = current;
 		
-    	if(offset >= nodeSize - 1) {
+    	if(offset >= current.count - 1) {
     		offset = 0;
     		current = current.next;
     	}
@@ -373,7 +373,32 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
     @Override
     public void remove()
     {
-    	// TODO 
+    	boolean isLastNode = (lastReturnedNode == tail.previous);
+    	if(isLastNode && lastReturnedNode.count == 1) {
+    		lastReturnedNode.previous.next = tail;
+    		tail.previous = lastReturnedNode.previous;
+    	}
+    	else if(isLastNode || lastReturnedNode.count > nodeSize / 2) {
+    		lastReturnedNode.removeItem(lastReturnedOffset);
+    	}
+    	else {
+    		Node successor = lastReturnedNode.next;
+    		E element;
+    		if(successor.count > nodeSize / 2) {
+    			element = successor.data[0];
+    			successor.removeItem(0);
+    			lastReturnedNode.addItem(element);
+    		}
+    		else {
+    			for(int i = 0; i < successor.count; i++) {
+    				element = successor.data[i];
+    				successor.removeItem(i);
+    				lastReturnedNode.addItem(element);
+    			}
+    		}
+    	}
+    	lastReturnedNode = null;
+    	lastReturnedOffset = -1;
     }
     
     // Other methods you may want to add or override that could possibly facilitate 
