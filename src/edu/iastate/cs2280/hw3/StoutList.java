@@ -85,8 +85,7 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
   @Override
   public int size()
   {
-    // TODO Auto-generated method stub
-    return 0;
+    return size;
   }
   
   @Override
@@ -233,8 +232,7 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
    * are null.
    */
   private class Node
-  {
-    /**
+  {    /**
      * Array of actual data elements.
      */
     // Unchecked warning unavoidable.
@@ -265,7 +263,7 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
     {
       if (count >= nodeSize)
       {
-        return;
+        throw new IllegalStateException();
       }
       data[count++] = item;
       //useful for debugging
@@ -284,7 +282,7 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
     {
       if (count >= nodeSize)
       {
-    	  return;
+    	  throw new IllegalStateException();
       }
       for (int i = count - 1; i >= offset; --i)
       {
@@ -317,15 +315,18 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
   private class StoutListIterator implements ListIterator<E>
   {
 	// constants you possibly use ...   
-	  
-	// instance variables ... 
-	  
+	
+	// instance variables ...
+	Node current;
+	int offset;
+	E lastReturned;
     /**
      * Default constructor 
      */
     public StoutListIterator()
     {
-    	// TODO 
+    	current = head;
+    	offset = 0;
     }
 
     /**
@@ -334,19 +335,37 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
      */
     public StoutListIterator(int pos)
     {
-    	// TODO 
+    	int nodePos = pos / nodeSize;
+    	Node current = head;
+    	for (int i = 0; i < nodePos; i++) {
+    		current = current.next;
+    	}
+    	offset = pos % nodeSize;
+    	
     }
 
     @Override
     public boolean hasNext()
     {
-    	// TODO 
+    	if(offset < nodeSize - 1 && current.data[offset + 1] != null) return true;
+    	if (current.next.data[0] != null) return true;
+    	return false;
     }
 
     @Override
     public E next()
     {
-    	// TODO 
+    	if (!hasNext()) throw new NoSuchElementException();
+    	int oldOffset;
+    	if(offset < nodeSize - 1) {
+    		oldOffset = offset;
+    		offset++;
+    		return current.data[oldOffset];
+    	}
+    	oldOffset = offset;
+    	offset = 0;
+    	current = current.next;
+    	return current.previous.data[oldOffset];
     }
 
     @Override
