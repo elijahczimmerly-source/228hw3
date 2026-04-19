@@ -104,8 +104,43 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
   @Override
   public E remove(int pos)
   {
-    // TODO Auto-generated method stub
-    return null;
+	int nodePos = pos / nodeSize;
+  	Node node = head.next;
+  	for (int i = 0; i < nodePos; i++) {
+  		node = node.next;
+  	}
+  	int offset = pos % nodeSize;
+  	E element = node.data[offset];
+  	
+  	removeHelper(node, offset);
+	return element;
+  }
+  
+  private void removeHelper(Node node, int offset) {
+	  boolean isLastNode = (node == tail.previous);
+		if(isLastNode && node.count == 1) {
+			node.previous.next = tail;
+			tail.previous = node.previous;
+		}
+		else if(isLastNode || node.count > nodeSize / 2) {
+			node.removeItem(offset);
+		}
+		else {
+			Node successor = node.next;
+			E element;
+			if(successor.count > nodeSize / 2) {
+				element = successor.data[0];
+				successor.removeItem(0);
+				node.addItem(element);
+			}
+			else {
+				for(int i = 0; i < successor.count; i++) {
+					element = successor.data[i];
+					successor.removeItem(i);
+					node.addItem(element);
+				}
+			}
+		}
   }
 
   /**
@@ -337,7 +372,7 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
     public StoutListIterator(int pos)
     {
     	int nodePos = pos / nodeSize;
-    	Node current = head.next;
+    	current = head.next;
     	for (int i = 0; i < nodePos; i++) {
     		current = current.next;
     	}
@@ -373,30 +408,7 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
     @Override
     public void remove()
     {
-    	boolean isLastNode = (lastReturnedNode == tail.previous);
-    	if(isLastNode && lastReturnedNode.count == 1) {
-    		lastReturnedNode.previous.next = tail;
-    		tail.previous = lastReturnedNode.previous;
-    	}
-    	else if(isLastNode || lastReturnedNode.count > nodeSize / 2) {
-    		lastReturnedNode.removeItem(lastReturnedOffset);
-    	}
-    	else {
-    		Node successor = lastReturnedNode.next;
-    		E element;
-    		if(successor.count > nodeSize / 2) {
-    			element = successor.data[0];
-    			successor.removeItem(0);
-    			lastReturnedNode.addItem(element);
-    		}
-    		else {
-    			for(int i = 0; i < successor.count; i++) {
-    				element = successor.data[i];
-    				successor.removeItem(i);
-    				lastReturnedNode.addItem(element);
-    			}
-    		}
-    	}
+    	removeHelper(lastReturnedNode, lastReturnedOffset);
     	lastReturnedNode = null;
     	lastReturnedOffset = -1;
     }
