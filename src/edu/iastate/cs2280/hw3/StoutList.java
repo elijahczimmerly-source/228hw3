@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.prefs.NodeChangeEvent;
 
 /**
  * Implementation of the list interface based on linked nodes
@@ -88,30 +89,46 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
     return size;
   }
   
+  //returns a NodeOffset object storing the node and offset for a given logical position
+  private NodeOffset find(int target) {
+	  Node node = head.next;
+	  int index = 0;
+	  while (index + node.count < target) {
+		  index += node.count;
+		  node = node.next;
+	  }
+	  int offset = target - index;
+	  return new NodeOffset(node, offset);
+  }
+  
   @Override
   public boolean add(E item)
   {
-    // TODO Auto-generated method stub
-    return false;
+    addHelper(tail.previous, tail.previous.count, item);
+    return true;
   }
 
   @Override
   public void add(int pos, E item)
   {
-    // TODO Auto-generated method stub
+	NodeOffset nodeAndOffset = find(pos);
+	Node node = nodeAndOffset.node;
+	int offset = nodeAndOffset.offset;
+    addHelper(node, offset, item);
+  }
+  
+  private void addHelper(Node node, int offset, E item) {
+	  
   }
 
   @Override
   public E remove(int pos)
   {
-	int nodePos = pos / nodeSize;
-  	Node node = head.next;
-  	for (int i = 0; i < nodePos; i++) {
-  		node = node.next;
-  	}
-  	int offset = pos % nodeSize;
-  	E element = node.data[offset];
+    NodeOffset nodeAndOffset = find(pos);
+    Node node = nodeAndOffset.node;
+    int offset = nodeAndOffset.offset;
   	
+  	E element = node.data[offset];
   	removeHelper(node, offset);
 	return element;
   }
@@ -258,7 +275,17 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
       sb.append("]");
       return sb.toString();
   }
-
+  
+  //stores logical positions as a node and an offset
+  private class NodeOffset{
+	  public Node node;
+	  public int offset;
+	  
+	  private NodeOffset(Node node, int offset){
+		  this.node = node;
+		  this.offset = offset;
+	  }
+  }
 
   /**
    * Node type for this list.  Each node holds a maximum
@@ -355,12 +382,15 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
 	int offset;
 	Node lastReturnedNode;
 	int lastReturnedOffset;
+	boolean nextCalled;
 	int index;
+	
     /**
      * Default constructor 
      */
     public StoutListIterator()
     {
+    	nextCalled = false;
     	index = 0;
     	current = head.next;
     	offset = 0;
@@ -372,13 +402,11 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
      */
     public StoutListIterator(int pos)
     {
+    	nextCalled = false;
     	index = pos;
-    	int nodePos = pos / nodeSize;
-    	current = head.next;
-    	for (int i = 0; i < nodePos; i++) {
-    		current = current.next;
-    	}
-    	offset = pos % nodeSize;
+    	NodeOffset nodeAndOffset = find(pos);
+        current = nodeAndOffset.node;
+        offset = nodeAndOffset.offset;
     }
 
     @Override
@@ -414,6 +442,7 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
     	removeHelper(lastReturnedNode, lastReturnedOffset);
     	lastReturnedNode = null;
     	lastReturnedOffset = -1;
+    	if(nextCalled) index --;
     }
 
 	@Override
@@ -458,8 +487,7 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
 
 	@Override
 	public void add(E e) {
-		// TODO Auto-generated method stub
-		
+		addHelper(current, offset, e);
 	}
     
     // Other methods you may want to add or override that could possibly facilitate 
