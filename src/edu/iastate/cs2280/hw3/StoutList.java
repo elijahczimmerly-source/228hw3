@@ -172,22 +172,21 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
   @Override
   public Iterator<E> iterator()
   {
-    // TODO Auto-generated method stub
-    return null;
+	  return listIterator();
   }
 
   @Override
   public ListIterator<E> listIterator()
   {
-    // TODO Auto-generated method stub
-    return null;
+    ListIterator<E> iterator = new StoutListIterator();
+    return iterator;
   }
 
   @Override
   public ListIterator<E> listIterator(int index)
   {
-    // TODO Auto-generated method stub
-    return null;
+    ListIterator<E> iterator = new StoutListIterator(index);
+    return iterator;
   }
   
   /**
@@ -196,7 +195,7 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
    */
   public String toStringInternal()
   {
-    return toStringInternal(null);
+    return toStringInternal(listIterator());
   }
 
   /**
@@ -356,11 +355,13 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
 	int offset;
 	Node lastReturnedNode;
 	int lastReturnedOffset;
+	int index;
     /**
      * Default constructor 
      */
     public StoutListIterator()
     {
+    	index = 0;
     	current = head.next;
     	offset = 0;
     }
@@ -371,19 +372,20 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
      */
     public StoutListIterator(int pos)
     {
+    	index = pos;
     	int nodePos = pos / nodeSize;
     	current = head.next;
     	for (int i = 0; i < nodePos; i++) {
     		current = current.next;
     	}
     	offset = pos % nodeSize;
-    	
     }
 
     @Override
     public boolean hasNext()
     {
-    	if(offset < nodeSize - 1 && offset < current.count - 1) return true;
+    	if(offset < current.count - 1) return true;
+    	if(current.next == null) return false;
     	if (current.next.count > 0) return true;
     	return false;
     }
@@ -402,6 +404,7 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
     	}
     	else offset++;
     	
+    	index++;
     	return lastReturnedNode.data[lastReturnedOffset];
     }
 
@@ -412,6 +415,52 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
     	lastReturnedNode = null;
     	lastReturnedOffset = -1;
     }
+
+	@Override
+	public boolean hasPrevious() {
+		if(offset > 0) return true;
+    	if(current.previous == null) return false;
+    	if (current.previous.count > 0) return true;
+    	return false;
+	}
+
+	@Override
+	public E previous() {
+		if (!hasPrevious()) throw new NoSuchElementException();
+    	
+    	lastReturnedOffset = offset;
+		lastReturnedNode = current;
+		
+    	if(offset == 0) {
+    		current = current.previous;
+    		offset = current.count - 1;
+    	}
+    	else offset--;
+    	
+    	index--;
+    	return lastReturnedNode.data[lastReturnedOffset];
+	}
+
+	@Override
+	public int nextIndex() {
+		return index + 1;
+	}
+
+	@Override
+	public int previousIndex() {
+		return index - 1;
+	}
+
+	@Override
+	public void set(E e) {
+		current.data[offset] = e;
+	}
+
+	@Override
+	public void add(E e) {
+		// TODO Auto-generated method stub
+		
+	}
     
     // Other methods you may want to add or override that could possibly facilitate 
     // other operations, for instance, addition, access to the previous element, etc.
