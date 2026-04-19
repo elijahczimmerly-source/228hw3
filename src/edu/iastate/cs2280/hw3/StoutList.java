@@ -326,7 +326,7 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
      */
     public StoutListIterator()
     {
-    	current = head;
+    	current = head.next;
     	offset = 0;
     }
 
@@ -337,7 +337,7 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
     public StoutListIterator(int pos)
     {
     	int nodePos = pos / nodeSize;
-    	Node current = head;
+    	Node current = head.next;
     	for (int i = 0; i < nodePos; i++) {
     		current = current.next;
     	}
