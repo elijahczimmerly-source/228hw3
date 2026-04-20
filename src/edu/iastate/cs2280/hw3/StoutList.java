@@ -91,6 +91,7 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
   
   //returns a NodeOffset object storing the node and offset for a given logical position
   private NodeOffset find(int target) {
+	  if(target == size) return new NodeOffset(tail, 0);
 	  Node node = head.next;
 	  int index = 0;
 	  while (index + node.count < target) {
@@ -118,7 +119,33 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
   }
   
   private void addHelper(Node node, int offset, E item) {
-	  
+	  if(size == 0) {
+		  Node newNode = new Node();
+		  newNode.addItem(item);
+	  }
+	  else if(offset == 0) {
+		  if(node != head && node.previous.count < nodeSize) node.previous.addItem(item);
+		  else if(node == tail && node.previous.count == nodeSize) {
+			  Node newNode = new Node();
+			  newNode.addItem(item);
+		  }
+	  }
+	  else if(node.count < nodeSize) {
+		  node.addItem(offset, item);
+	  }
+	  else{
+		  Node successor = new Node();
+		  successor.next = node.next;
+		  node.next.previous = successor;
+		  node.next = successor;
+		  successor.previous = node;
+		  for(int i = nodeSize / 2; i < nodeSize; i++) {
+			  successor.data[i - nodeSize / 2] = node.data[i];
+		  }
+		  if(offset <= nodeSize / 2) node.addItem(offset, item);
+		  else successor.addItem(offset - nodeSize / 2, item);
+	  }
+	  size++;
   }
 
   @Override
@@ -482,12 +509,22 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
 
 	@Override
 	public void set(E e) {
-		current.data[offset] = e;
+		if(lastReturnedNode == null) throw new IllegalStateException();
+		lastReturnedNode.data[lastReturnedOffset] = e;
 	}
 
 	@Override
 	public void add(E e) {
+		if(e == null) throw new NullPointerException();
 		addHelper(current, offset, e);
+		index++;
+		lastReturnedNode = null;
+		lastReturnedOffset  = -1;
+		nextCalled = false;
+		
+		NodeOffset nodeAndOffset = find(index);
+		this.current = nodeAndOffset.node;
+		this.offset = nodeAndOffset.offset;
 	}
     
     // Other methods you may want to add or override that could possibly facilitate 
