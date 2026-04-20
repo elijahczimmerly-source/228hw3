@@ -186,6 +186,7 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
 			}
 		}
   }
+  
 
   /**
    * Sort all elements in the stout list in the NON-DECREASING order. You may do the following. 
@@ -199,7 +200,10 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
    */
   public void sort()
   {
-	  // TODO 
+	  E[] arr = moveToArray();
+	  Comparator<E> comp = (a, b) -> a.compareTo(b);
+	  insertionSort(arr, comp);
+	  addFromArray(arr);
   }
   
   /**
@@ -210,7 +214,37 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
    */
   public void sortReverse() 
   {
-	  // TODO 
+	  E[] arr = moveToArray();
+	  bubbleSort(arr);
+	  addFromArray(arr);
+  }
+  
+  private E[] moveToArray() {
+	  E[] arr = (E[]) new Comparable[size];
+	  int i = 0;
+	  for(E item : this) arr[i++] = item;
+	  head.next = tail;
+	  tail.previous = head;
+	  return arr;
+  }
+  
+  private void addFromArray(E[] arr) {
+	  int numNodes = Math.ceilDiv(size, nodeSize);
+	  Node current = head;
+	  int index = 0;
+	  for(int i = 0; i < numNodes; i++) {
+		  Node newNode = new Node();
+		  current.next.previous = newNode;
+		  newNode.next = current.next;
+		  current.next = newNode;
+		  newNode.previous = current;
+		  current = newNode;
+		  for(int j = 0; j < nodeSize; j++) {
+			  if(index >= size) return;
+			  current.addItem(arr[index]);
+			  index++;
+		  }
+	  }
   }
   
   @Override
