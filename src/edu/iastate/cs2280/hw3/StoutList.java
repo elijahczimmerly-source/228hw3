@@ -598,7 +598,17 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
    */
   private void bubbleSort(E[] arr)
   {
-	  // TODO
+	  int numPasses = size - 1;
+	  int sortedIndex = -1;
+	  for(int i = 0; i < numPasses; i++) {
+		  for(int j = size - 1; j > sortedIndex + 1; i--) {
+			  if(arr[j].compareTo(arr[j-1]) > 0) {
+				  E temp = arr[j];
+				  arr[j] = arr[j-1];
+				  arr[j-1] = temp;
+			  }
+		  }
+	  }
   }
  
 
