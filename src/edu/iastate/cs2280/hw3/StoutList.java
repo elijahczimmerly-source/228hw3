@@ -576,7 +576,17 @@ public class StoutList<E extends Comparable<? super E>> extends AbstractSequenti
    */
   private void insertionSort(E[] arr, Comparator<? super E> comp)
   {
-	  // TODO
+	  for(int i = 1; i < arr.length; i++) {
+		  E item = arr[i];
+		  for(int j = 0; j < i; j++) {
+			  if(comp.compare(item, arr[j]) >= 0) {
+				  for(int k = i; k > j; k--) {
+					  arr[k] = arr[k-1];
+				  }
+				  arr[j] = item;
+			  }
+		  }
+	  }
   }
   
   /**
